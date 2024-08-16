@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamified Task Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class="flashes">
+            {% for category, message in messages %}
+                <li class="flash flash-{{ category }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
+
+    <header>
+        <h1>Task Manager with RPG Elements</h1>
+        <p>Total Points: <strong>{{ points }}</strong></p>
+        <p>Level: <strong>{{ character.level }}</strong> | XP: <strong>{{ character.xp }}</strong> | Coins: <strong>{{ character.coins }}</strong></p>
+        <p>Strength: <strong>{{ character.strength }}</strong> | Attack Speed: <strong>{{ character.attack_speed }}</strong> | Defense: <strong>{{ character.defense }}</strong> | Dexterity: <strong>{{ character.dexterity }}</strong></p>
+        <p>HP: <strong>{{ character.hp }}</strong> / {{ character.max_hp }}</p>
+        <p>Weapon: <strong>{{ character.equipment.weapon or 'None' }}</strong> | Armor: <strong>{{ character.equipment.armor or 'None' }}</strong></p>
+        {% if character.stat_points > 0 %}
+        <p>You have <strong>{{ character.stat_points }}</strong> stat points to distribute:</p>
+        <a href="{{ url_for('upgrade_stat', stat='strength') }}">Upgrade Strength</a> |
+        <a href="{{ url_for('upgrade_stat', stat='attack_speed') }}">Upgrade Attack Speed</a> |
+        <a href="{{ url_for('upgrade_stat', stat='defense') }}">Upgrade Defense</a> |
+        <a href="{{ url_for('upgrade_stat', stat='dexterity') }}">Upgrade Dexterity</a>
+        {% endif %}
+    </header>
+
+    <main>
+        <section class="task-section">
+            <h2>Add a New Task</h2>
+            <form action="{{ url_for('add_task') }}" method="POST">
+                <input type="text" name="task" placeholder="Task Title" required>
+                <input type="text" name="description" placeholder="Task Description">
+                <select name="priority" required>
+                    <option value="3">Low Priority</option>
+                    <option value="2">Medium Priority</option>
+                    <option value="1">High Priority</option>
+                </select>
+                <button type="submit">Add Task</button>
+            </form>
+
+            <h2>Tasks</h2>
+            <ul>
+                {% for task in tasks %}
+                <li class="{% if task.completed %}completed{% endif %} priority-{{ task.priority }}">
+                    <strong>{{ task.task }}</strong> - {{ task.description }}
+                    [Priority: {{ 'High' if task.priority == '1' else 'Medium' if task.priority == '2' else 'Low' }}]
+                    {% if not task.completed %}
+                    <a href="{{ url_for('complete_task', task_id=loop.index0) }}">Complete</a>
+                    {% else %}
+                    <span>Completed</span>
+                    {% endif %}
+                    <a href="{{ url_for('delete_task', task_id=loop.index0) }}" class="delete">Delete</a>
+                </li>
+                {% endfor %}
+            </ul>
+            <a href="{{ url_for('reset') }}">Reset All</a>
+        </section>
+
+        <section class="monster-section">
+            <h2>Monsters</h2>
+            <ul>
+                {% for monster in monsters %}
+                <li class="{% if monster.get('color_intensity') %}demon-lord{% endif %}" 
+                    style="{% if monster.get('color_intensity') %}background-color: rgba(255, 0, 0, {{ monster.color_intensity / 100 }});{% endif %}">
+                    {% if monster.get('color_intensity') %}
+                        <strong>Demon Lord Nazareth</strong>
+                    {% else %}
+                        <strong>{{ monster.name }}</strong>
+                    {% endif %}
+                    - HP: {{ monster.hp }} - Damage: {{ monster.damage }} - Reward: {{ monster.reward }} coins
+                    <a href="{{ url_for('attack_monster', monster_id=loop.index0) }}">Attack</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="potions-section">
+            <h2>Potions</h2>
+            <h3>Earn potions by completing tasks! (Low-10, Medium-5, High-2)</h3>
+            <ul>
+                {% for potion, count in character.potions.items() %}
+                    <li>
+                        {% if potion == 'Health Potion' %}
+                            <img src="{{ url_for('static', filename='health_potion.png') }}" class="potion-size" alt="Health Potion">
+                        {% elif potion == 'Strength Potion' %}
+                            <img src="{{ url_for('static', filename='strength_potion.png') }}" class="potion-size" alt="Strength Potion">
+                        {% elif potion == 'Speed Potion' %}
+                            <img src="{{ url_for('static', filename='speed_potion.png') }}" class="potion-size" alt="Speed Potion">
+                        {% endif %}
+                        <strong>{{ potion }}</strong> - Quantity: {{ count }}
+                        {% if count > 0 %}
+                        <a href="{{ url_for('use_potion', potion=potion) }}">Use</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </main>
+</body>
+</html>
