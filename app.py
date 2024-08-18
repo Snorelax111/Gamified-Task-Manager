@@ -32,6 +32,12 @@ monsters = []
 # Boss Details
 boss_index = 1
 
+potion_prices = {
+    'Health Potion': 50,
+    'Strength Potion': 100,
+    'Speed Potion': 75
+}
+
 def reward_potion(priority):
     if priority == '3':  # Low Priority
         completed_tasks['low'] += 1
@@ -92,7 +98,7 @@ def index():
     # Combine the lists, starting with high priority
     sorted_tasks = high_priority_tasks + medium_priority_tasks + low_priority_tasks
 
-    return render_template('index.html', tasks=sorted_tasks, points=points, character=character, monsters=monsters, boss_index=boss_index)
+    return render_template('index.html', tasks=sorted_tasks, points=points, character=character, monsters=monsters, boss_index=boss_index, potion_prices=potion_prices)
 
 @app.route('/add_task', methods=['POST'])
 def add_task():
@@ -198,7 +204,9 @@ def attack_monster(monster_id):
         if character['hp'] <= 0:
             # Player is defeated
             flash("You're too weak! You were defeated by the monster.", 'danger')
+            flash("Death can only be rewound so many times...")
             character['hp'] = character['max_hp']  # Reset HP after defeat
+            
         return redirect(url_for('index'))
 
 @app.route('/use_potion/<string:potion>')
@@ -214,6 +222,17 @@ def use_potion(potion):
         elif potion == 'Speed Potion':
             flash(f"You used a Speed Potion! Your attack speed is permanently increased.", 'info')
             character['attack_speed'] += 1  # Permanently boost
+    return redirect(url_for('index'))
+
+@app.route('/buy_potion/<string:potion>')
+def buy_potion(potion):
+    if potion in potion_prices:
+        if character['coins'] >= potion_prices[potion]:
+            character['coins'] -= potion_prices[potion]
+            character['potions'][potion] += 1
+            flash(f"You bought a {potion} for {potion_prices[potion]} coins!", 'success')
+        else:
+            flash(f"You don't have enough coins to buy a {potion}!", 'danger')
     return redirect(url_for('index'))
 
 def check_level_up():
@@ -275,3 +294,4 @@ def get_chest(priority):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
