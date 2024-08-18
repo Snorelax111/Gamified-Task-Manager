@@ -18,7 +18,7 @@
     {% endwith %}
 
     <header>
-        <h1>Task Manager with RPG Elements</h1>
+        <h1>TaskMaster RPG</h1>
         <p>Total Points: <strong>{{ points }}</strong></p>
         <p>Level: <strong>{{ character.level }}</strong> | XP: <strong>{{ character.xp }}</strong> | Coins: <strong>{{ character.coins }}</strong></p>
         <p>Strength: <strong>{{ character.strength }}</strong> | Attack Speed: <strong>{{ character.attack_speed }}</strong> | Defense: <strong>{{ character.defense }}</strong> | Dexterity: <strong>{{ character.dexterity }}</strong></p>
@@ -84,26 +84,28 @@
         </section>
 
         <section class="potions-section">
-            <h2>Potions</h2>
-            <h3>Earn potions by completing tasks! (Low-10, Medium-5, High-2)</h3>
-            <ul>
-                {% for potion, count in character.potions.items() %}
-                    <li>
-                        {% if potion == 'Health Potion' %}
-                            <img src="{{ url_for('static', filename='health_potion.png') }}" class="potion-size" alt="Health Potion">
-                        {% elif potion == 'Strength Potion' %}
-                            <img src="{{ url_for('static', filename='strength_potion.png') }}" class="potion-size" alt="Strength Potion">
-                        {% elif potion == 'Speed Potion' %}
-                            <img src="{{ url_for('static', filename='speed_potion.png') }}" class="potion-size" alt="Speed Potion">
-                        {% endif %}
-                        <strong>{{ potion }}</strong> - Quantity: {{ count }}
-                        {% if count > 0 %}
-                        <a href="{{ url_for('use_potion', potion=potion) }}">Use</a>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        </section>
+    <h2>Potions</h2>
+    <h3>Earn or buy potions to boost your stats!</h3>
+    <ul>
+        {% for potion, count in character.potions.items() %}
+            <li>
+                {% if potion == 'Health Potion' %}
+                    <img src="{{ url_for('static', filename='health_potion.png') }}" class="potion-size" alt="Health Potion">
+                {% elif potion == 'Strength Potion' %}
+                    <img src="{{ url_for('static', filename='strength_potion.png') }}" class="potion-size" alt="Strength Potion">
+                {% elif potion == 'Speed Potion' %}
+                    <img src="{{ url_for('static', filename='speed_potion.png') }}" class="potion-size" alt="Speed Potion">
+                {% endif %}
+                <strong>{{ potion }}</strong> - Quantity: {{ count }}
+                <a href="{{ url_for('buy_potion', potion=potion) }}">Buy for {{ potion_prices[potion] }} coins</a>
+                {% if count > 0 %}
+                    <a href="{{ url_for('use_potion', potion=potion) }}">Use</a>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</section>
+
     </main>
 </body>
 </html>
